@@ -652,6 +652,7 @@ class MetadataYAML(YAMLTactic):
         self.storage = {}
         self.maintainer = None
         self.maintainers = []
+        self.interfaces = []
 
     def read(self):
         if not self._read:
@@ -660,6 +661,12 @@ class MetadataYAML(YAMLTactic):
                             for name in self.data.get('storage', {}).keys()}
             self.maintainer = self.data.get('maintainer')
             self.maintainers = self.data.get('maintainers')
+            i = set()
+            for role in ('provides', 'requires', 'peers'):
+                for rel in self.data.get(role, {}):
+                    if 'interface' in rel:
+                        i.add(rel['interface'])
+            self.interfaces = list(i)
 
     def combine(self, existing):
         self.read()

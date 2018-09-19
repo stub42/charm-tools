@@ -451,11 +451,20 @@ class Builder(object):
                         self.target, target_config)
                 )
 
-        # Link Phase
         source_layer = output_files[self.HOOK_TEMPLATE_FILE].layer
+
+        def owner(relation_name):
+            for m in metadata_tactic:
+                for role in ("provides", "requires", "peers"):
+                    for rel in m.data.get(role, []):
+                        if relation_name in rel:
+                            return m.layer.url
+            return source_layer.url
+
+        # Link Phase
         for role, relation_name, interface_name in specs:
             plan.append(charmtools.build.tactics.InterfaceBind(
-                relation_name, source_layer.url, self.target,
+                relation_name, owner(relation_name), self.target,
                 target_config, output_files, template_file))
 
     def plan_storage(self, layers, output_files, plan):
